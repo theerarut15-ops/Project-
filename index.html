@@ -1,70 +1,65 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<title>ตรวจสอบสถานะพัสดุ</title>
-
-<style>
-body { font-family: sans-serif; background:#f5f5f5; padding:40px; }
-.box { max-width:600px; margin:auto; background:white; padding:20px; border-radius:8px; }
-input, button { padding:10px; width:100%; margin-top:10px; }
-.status { margin-top:20px; }
-.timeline { margin-top:10px; font-size:14px; }
-</style>
-
+  <meta charset="UTF-8" />
+  <title>ตรวจสอบสถานะพัสดุ</title>
+  <style>
+    body { font-family: sans-serif; background:#f5f5f5; padding:40px; }
+    .box { max-width:600px; margin:auto; background:white; padding:20px; border-radius:8px; }
+    input, button { padding:10px; width:100%; margin-top:10px; }
+    .status { margin-top:20px; }
+    .timeline { margin-top:10px; font-size:14px; }
+  </style>
 </head>
 <body>
 
-<div class="box">
-<h2>ตรวจสอบสถานะพัสดุ</h2>
+  <div class="box">
+    <h2>ตรวจสอบสถานะพัสดุ</h2>
+    <input id="tracking" placeholder="กรอกหมายเลขพัสดุ">
+    <button id="btnCheck">ตรวจสอบ</button>
+    <div id="result" class="status"></div>
+  </div>
 
-<input id="tracking" placeholder="กรอกหมายเลขพัสดุ">
-<button onclick="checkTracking()">ตรวจสอบ</button>
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzLcXTG8GnyhbDTdG2oMPMa3BbveVUixMdJ5mMpxE0ercE8MX_b2KMsAwrJGD3f9sF_/exec";
 
-<div id="result" class="status"></div>
-</div>
+    async function checkTracking() {
+      const tracking = document.getElementById("tracking").value.trim();
+      const result = document.getElementById("result");
 
-<script>
+      if (!tracking) {
+        result.innerHTML = "<p>กรุณากรอกหมายเลขพัสดุ</p>";
+        return;
+      }
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzLcXTG8GnyhbDTdG2oMPMa3BbveVUixMdJ5mMpxE0ercE8MX_b2KMsAwrJGD3f9sF_/exec";
+      result.innerHTML = "<p>กำลังตรวจสอบ...</p>";
 
-async function checkTracking() {
+      try {
+        const response = await fetch(API_URL + "?code=" + encodeURIComponent(tracking));
+        const data = await response.json();
 
-const tracking = document.getElementById("tracking").value.trim();
-const result = document.getElementById("result");
+        if (!data.ok) {
+          result.innerHTML = "<p>❌ ไม่พบข้อมูลพัสดุ</p>";
+          return;
+        }
 
-if (!tracking) {
-result.innerHTML = "กรุณากรอกหมายเลขพัสดุ";
-return;
-}
+        const d = data.data || {};
+        const timeline = (d.timeline || "").replace(/\n/g, "<br>");
 
-result.innerHTML = "กำลังตรวจสอบ...";
+        result.innerHTML = `
+          <p><b>สถานะ:</b> ${d.status_th || "-"}</p>
+          <p><b>อัปเดตล่าสุด:</b> ${d.last_update || "-"}</p>
+          <div class="timeline">${timeline}</div>
+          ${d.note ? `<p><b>หมายเหตุ:</b> ${d.note}</p>` : ""}
+        `;
+      } catch (error) {
+        console.error(error);
+        result.innerHTML = "<p>เกิดข้อผิดพลาด</p>";
+      }
+    }
 
-try {
-
-const response = await fetch(API_URL + "?code=" + encodeURIComponent(tracking));
-const data = await response.json();
-
-if (!data.ok) {
-result.innerHTML = "ไม่พบข้อมูลพัสดุ";
-return;
-}
-
-const d = data.data || {};
-const timeline = (d.timeline || "").replace(/\n/g, "<br>");
-
-result.innerHTML = `
-<p><b>สถานะ:</b> ${d.status_th || "-"}</p>
-<p><b>อัปเดตล่าสุด:</b> ${d.last_update || "-"}</p>
-<div class="timeline">${timeline}</div>
-${d.note ? `<p><b>หมายเหตุ:</b> ${d.note}</p>` : ""}
-} catch (error) {
-result.innerHTML = "เกิดข้อผิดพลาด";
-}
-
-}
-
-</script>
+    document.getElementById("btnCheck").addEventListener("click", checkTracking);
+  </script>
 
 </body>
-</html> 
+</html>
