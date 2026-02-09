@@ -57,9 +57,7 @@ result.innerHTML = `
 <p><b>สถานะ:</b> ${d.status_th || "-"}</p>
 <p><b>อัปเดตล่าสุด:</b> ${d.last_update || "-"}</p>
 <div class="timeline">${timeline}</div>
-${d.note ? <p><b>หมายเหตุ:</b> ${d.note}</p> : ""}
-`;
-
+${d.note ? `<p><b>หมายเหตุ:</b> ${d.note}</p>` : ""}
 } catch (error) {
 result.innerHTML = "เกิดข้อผิดพลาด";
 }
