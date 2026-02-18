@@ -149,11 +149,15 @@ result.innerHTML = `
 <p><b>ประเทศปลายทาง:</b> ${d.destination || "-"}</p>
 <p><b>Last Mile:</b> ${d.last_mile || "-"}</p>
 
+<hr>
+
 <p><b>สถานะ:</b> ${d.status_th || "-"}</p>
 <p><b>อัปเดตล่าสุด:</b> ${d.last_update || "-"}</p>
 <div class="timeline">${timeline}</div>
+
 ${d.note ? `<p><b>หมายเหตุ:</b> ${d.note}</p>` : ""}
 `;
+
 
 
 } catch (error) {
