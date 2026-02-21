@@ -436,7 +436,7 @@
   if(!dest) return "-";
   const code = String(dest).trim().toUpperCase();
   const flag = flagEmojiFromCode(code);
-  return flag ? `${flag} ${code}` : code;
+  return flag ? `${flag}` : code;
 }
 
     // ====== UI helpers ======
