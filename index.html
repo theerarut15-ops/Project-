@@ -433,12 +433,11 @@
     }
 
     function destinationWithFlag(dest){
-      const code = countryCodeFromDestination(dest);
-      const flag = flagEmojiFromCode(code);
-      if(flag && dest) return `${flag} ${dest}`;
-      if(flag && !dest) return flag;
-      return dest || "-";
-    }
+  if(!dest) return "-";
+  const code = String(dest).trim().toUpperCase();
+  const flag = flagEmojiFromCode(code);
+  return flag ? `${flag} ${code}` : code;
+}
 
     // ====== UI helpers ======
     function setLoading(isLoading){
