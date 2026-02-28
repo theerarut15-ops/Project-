@@ -153,9 +153,7 @@ input{
 
   <div class="header-box">
     <div class="header-left">
-     
       <img src="S__42147848.jpg" class="logo">
-
       <div class="title-box">
         <h1>ThaiGo Logistics International</h1>
         <p>โลจิสติกส์อินเตอร์ • ระบบติดตามพัสดุ</p>
@@ -172,15 +170,54 @@ input{
     <h2>ตรวจสอบสถานะพัสดุ</h2>
     <p>กรอกเลข Tracking เพื่อดูสถานะล่าสุด • ลูกค้า • ประเทศปลายทาง</p>
 
-    <input placeholder="เช่น YT2603...">
+    <input id="trackingInput" placeholder="เช่น TG0001...">
 
     <div class="button-row">
-      <button class="btn-primary">ตรวจสอบ</button>
-      <button class="btn-secondary">ล้างข้อมูล</button>
+      <button class="btn-primary" onclick="checkTracking()">ตรวจสอบ</button>
+      <button class="btn-secondary" onclick="clearForm()">ล้างข้อมูล</button>
     </div>
   </div>
 
 </div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzJfvJkZln9YacGZ0sRzfkn7E1zFUEooUC1HIcUQJ-iAsSAcWjQsxUyTzcKxJCnKjt3/exec";
+
+async function checkTracking() {
+  const tracking = document.getElementById("trackingInput").value.trim();
+
+  if (!tracking) {
+    alert("กรุณากรอกเลขพัสดุ");
+    return;
+  }
+
+  try {
+    const res = await fetch(API_URL + "?code=" + tracking);
+    const json = await res.json();
+
+    if (!json.ok) {
+      alert(json.message);
+      return;
+    }
+
+    const d = json.data;
+
+    alert(
+      "สถานะ: " + d.status_th + "\n" +
+      "ชื่อผู้รับ: " + d.customer_name + "\n" +
+      "ประเทศ: " + d.destination + "\n\n" +
+      d.timeline
+    );
+
+  } catch (err) {
+    alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+  }
+}
+
+function clearForm() {
+  document.getElementById("trackingInput").value = "";
+}
+</script>
 
 </body>
 </html>
