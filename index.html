@@ -6,9 +6,7 @@
 <title>ThaiGo Logistics International | Tracking Portal</title>
 
 <style>
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box;}
 
 body{
   margin:0;
@@ -16,14 +14,12 @@ body{
   background:#0f2c59;
 }
 
-/* ===== CONTAINER ===== */
 .container{
   max-width:700px;
   margin:auto;
   padding:20px;
 }
 
-/* ===== HEADER ===== */
 .header-box{
   background:#ffffff;
   border-radius:20px;
@@ -36,10 +32,10 @@ body{
   width:90px;
   height:90px;
   border-radius:15px;
-  background:#fff;
   padding:10px;
   margin:auto;
   display:block;
+  background:#fff;
 }
 
 .title-box h1{
@@ -54,7 +50,6 @@ body{
   color:#6b7c93;
 }
 
-/* ===== TRACKING BOX ===== */
 .tracking-box{
   background:#ffffff;
   border-radius:25px;
@@ -106,7 +101,6 @@ button{
   background:#e1e6ec;
 }
 
-/* ===== RESULT BOX ===== */
 .result-box{
   background:#f4f6f9;
   border-radius:20px;
@@ -117,16 +111,19 @@ button{
 
 .status-badge{
   display:inline-block;
-  padding:8px 15px;
+  padding:10px 18px;
   border-radius:30px;
   font-weight:600;
   margin-bottom:15px;
+  font-size:15px;
 }
 
-.status-success{
-  background:#28a745;
-  color:#fff;
-}
+/* ===== STATUS COLORS ===== */
+
+.status-success{ background:#2e7d32; color:#fff; }      /* จัดส่งสำเร็จ */
+.status-warning{ background:#ef6c00; color:#fff; }      /* ศุลกากร */
+.status-progress{ background:#1565c0; color:#fff; }     /* กำลังขนส่ง */
+.status-received{ background:#546e7a; color:#fff; }     /* รับเข้าระบบ */
 
 .info-block{
   margin-bottom:15px;
@@ -138,30 +135,15 @@ button{
   padding:10px 0;
   border-bottom:1px solid #ddd;
   font-size:14px;
-  line-height:1.5;
+  line-height:1.6;
   word-break:break-word;
 }
 
-/* ===== DESKTOP ===== */
 @media(min-width:768px){
-  .container{
-    padding:40px;
-  }
-
-  .title-box h1{
-    font-size:26px;
-  }
-
-  .tracking-box h2{
-    font-size:26px;
-  }
+  .container{ padding:40px; }
+  .title-box h1{ font-size:26px; }
+  .tracking-box h2{ font-size:26px; }
 }
-    /* ===== CORPORATE TIMELINE ===== */
-  .timeline{
-    margin-top:25px;
-    position:relative;
-    padding-left:30px;
-  }
 </style>
 </head>
 
@@ -212,6 +194,19 @@ function checkTracking(){
 
       const result = data.data;
 
+      /* ===== กำหนดสีตามสถานะ ===== */
+      let statusClass = "status-progress";
+
+      if(result.status_th === "จัดส่งสำเร็จ"){
+        statusClass = "status-success";
+      }
+      else if(result.status_th === "ดำเนินการพิธีการศุลกากร"){
+        statusClass = "status-warning";
+      }
+      else if(result.status_th === "พัสดุรับเข้าระบบ"){
+        statusClass = "status-received";
+      }
+
       let timelineHTML = "";
       if(result.timeline){
         const lines = result.timeline.split("\n");
@@ -221,9 +216,9 @@ function checkTracking(){
       }
 
       document.getElementById("resultBox").innerHTML = `
-        <div class="status-badge status-success">${result.status_th}</div>
+        <div class="status-badge ${statusClass}">${result.status_th}</div>
         <div class="info-block"><strong>ชื่อลูกค้า:</strong> ${result.customer_name}</div>
-        <div class="info-block"><strong>ประเทศ:</strong> ${result.destination}</div>
+        <div class="info-block"><strong>ประเทศปลายทาง:</strong> ${result.destination}</div>
         <hr>
         ${timelineHTML}
       `;
