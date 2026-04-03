@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>ThaiGo Air Express</title>
+
 <style>
 body{
   font-family: Arial;
@@ -38,14 +39,14 @@ button{
 }
 </style>
 </head>
+
 <body>
+
 <div class="container">
 <h2>คำนวณค่าส่ง</h2>
 
 <label>ประเทศ</label>
-<select id="country">
-<option value="USA">USA</option>
-</select>
+<select id="country"></select>
 
 <label>น้ำหนัก (kg)</label>
 <input type="number" id="weight">
@@ -66,10 +67,13 @@ button{
 </div>
 
 <script>
+
 let pricing = {};
 
+// โหลดราคา
 async function loadPricing(){
   const url = "https://opensheet.elk.sh/1bkT93uDRhnTeb_nFzKWXsTbtDhGKbl-B_TNf_4gIX4Y/pricing_master";
+
   let res = await fetch(url);
   let data = await res.json();
 
@@ -77,7 +81,9 @@ async function loadPricing(){
     let country = row.country;
     let weight = parseFloat(row.weight);
     let price = parseFloat((row.price || "0").replace(/,/g, ''));
+
     if(isNaN(price)) return;
+
     if(!pricing[country]){
       pricing[country] = {};
     }
@@ -85,11 +91,25 @@ async function loadPricing(){
     pricing[country][weight] = price;
   });
 
+  loadCountries();
+
   document.getElementById("result").innerHTML = "พร้อมใช้งานแล้ว";
 }
 
-loadPricing();
+// 🔥 สร้าง dropdown ประเทศอัตโนมัติ
+function loadCountries(){
+  let select = document.getElementById("country");
+  select.innerHTML = "";
 
+  Object.keys(pricing).forEach(country => {
+    let option = document.createElement("option");
+    option.value = country;
+    option.text = country;
+    select.appendChild(option);
+  });
+}
+
+// คำนวณราคา
 function calculate(){
   let country = document.getElementById("country").value;
   let w = parseFloat(document.getElementById("weight").value) || 0;
@@ -99,6 +119,7 @@ function calculate(){
 
   let vol = (l * wi * h) / 5000;
   let charge = Math.max(w, vol);
+
   charge = Math.ceil(charge * 10) / 10;
 
   let table = pricing[country];
@@ -109,12 +130,18 @@ function calculate(){
   }
 
   let keys = Object.keys(table).map(Number).sort((a,b)=>a-b);
+
   let finalWeight = keys.find(k => k >= charge) || keys[keys.length-1];
   let price = table[finalWeight];
 
   document.getElementById("result").innerHTML =
   `น้ำหนักคิดราคา: ${charge} kg <br> ราคาค่าส่ง: ${price} บาท`;
 }
+
+// เริ่มโหลด
+loadPricing();
+
 </script>
+
 </body>
 </html>
