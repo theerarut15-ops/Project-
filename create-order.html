@@ -3,14 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>ThaiGo Air Express</title>
-
 <style>
 body{
   font-family: Arial;
   background: linear-gradient(135deg,#0f2a4a,#1e3a8a);
   padding:20px;
 }
-
 .container{
   background:#fff;
   padding:25px;
@@ -19,22 +17,18 @@ body{
   margin:auto;
   box-shadow:0 10px 30px rgba(0,0,0,0.2);
 }
-
 .logo{
   text-align:center;
   margin-bottom:10px;
 }
-
 .logo h1{
   margin:0;
   color:#1e3a8a;
 }
-
 .logo span{
   color:#c9a54c;
   font-weight:bold;
 }
-
 input,select{
   width:100%;
   padding:12px;
@@ -42,12 +36,10 @@ input,select{
   border-radius:10px;
   border:1px solid #ddd;
 }
-
 .row{
   display:flex;
   gap:10px;
 }
-
 button{
   width:100%;
   padding:14px;
@@ -56,8 +48,18 @@ button{
   border:none;
   border-radius:12px;
   font-size:16px;
+  cursor:pointer;
 }
-
+.line-btn{
+  margin-top:10px;
+  display:block;
+  text-align:center;
+  padding:12px;
+  background:#06c755;
+  color:#fff;
+  border-radius:10px;
+  text-decoration:none;
+}
 .result{
   margin-top:15px;
   padding:15px;
@@ -112,15 +114,19 @@ async function loadPricing(){
   data.forEach(row => {
     let country = row.country?.trim();
     let weight = parseFloat(row.weight);
-    let price = parseFloat((row.price || "0").replace(/,/g,''));
+    let price = parseFloat((row.price || "").replace(/,/g,''));
 
-    if(!country || isNaN(weight) || isNaN(price)) return;
+    // ✅ ให้ประเทศขึ้นแม้ไม่มีราคา
+    if(!country || isNaN(weight)) return;
 
     if(!pricing[country]){
       pricing[country] = {};
     }
 
-    pricing[country][weight] = price;
+    if(!isNaN(price)){
+      pricing[country][weight] = price;
+    }
+
     countrySet.add(country);
   });
 
@@ -153,8 +159,13 @@ charge = Math.ceil(charge * 10) / 10;
 
 let table = pricing[country];
 
-if(!table){
-  document.getElementById("result").innerHTML = "ยังไม่มีราคาประเทศนี้";
+// ❗ ไม่มีราคาจริง
+if(!table || Object.keys(table).length === 0){
+  document.getElementById("result").innerHTML = `
+  ⚠️ ประเทศนี้ยังไม่มีราคาชัดเจน<br><br>
+  <a class="line-btn" href="https://lin.ee/O6PIltj">
+  📲 สอบถามราคากับแอดมิน
+  </a>`;
   return;
 }
 
@@ -163,7 +174,8 @@ let finalWeight = keys.find(k => k >= charge) || keys[keys.length-1];
 let price = table[finalWeight];
 
 document.getElementById("result").innerHTML =
-`น้ำหนักคิดราคา: ${charge} kg <br> ราคาค่าส่ง: ${price.toLocaleString()} บาท`;
+`น้ำหนักคิดราคา: ${charge} kg <br>
+ราคาค่าส่ง: ${price.toLocaleString()} บาท`;
 
 }
 
