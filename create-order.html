@@ -2,13 +2,17 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ThaiGo Air Express</title>
+
 <style>
 body{
   font-family: Arial;
   background: linear-gradient(135deg,#0f2a4a,#1e3a8a);
+  margin:0;
   padding:20px;
 }
+
 .container{
   background:#fff;
   padding:25px;
@@ -17,55 +21,81 @@ body{
   margin:auto;
   box-shadow:0 10px 30px rgba(0,0,0,0.2);
 }
+
 .logo{
   text-align:center;
   margin-bottom:10px;
 }
+
 .logo h1{
-  margin:0;
   color:#1e3a8a;
+  margin:0;
 }
+
 .logo span{
   color:#c9a54c;
   font-weight:bold;
 }
+
+h2{
+  text-align:center;
+}
+
 input,select{
   width:100%;
   padding:12px;
   margin:8px 0;
   border-radius:10px;
-  border:1px solid #ddd;
+  border:1px solid #ccc;
+  font-size:14px;
 }
+
 .row{
   display:flex;
-  gap:10px;
+  gap:8px;
 }
+
 button{
   width:100%;
   padding:14px;
-  background: linear-gradient(90deg,#1e3a8a,#0f2a4a);
+  background:linear-gradient(90deg,#1e3a8a,#0f2a4a);
   color:#fff;
   border:none;
   border-radius:12px;
   font-size:16px;
-  cursor:pointer;
-}
-.line-btn{
   margin-top:10px;
-  display:block;
-  text-align:center;
-  padding:12px;
-  background:#06c755;
-  color:#fff;
-  border-radius:10px;
-  text-decoration:none;
 }
+
 .result{
   margin-top:15px;
+  background:#f3f4f6;
   padding:15px;
-  background:#f3f6fb;
-  border-radius:12px;
+  border-radius:10px;
   text-align:center;
+}
+
+.badge{
+  color:green;
+  margin-top:5px;
+}
+
+.line-btn{
+  display:block;
+  margin-top:15px;
+  text-align:center;
+  background:#06c755;
+  color:#fff;
+  padding:12px;
+  border-radius:10px;
+  text-decoration:none;
+  font-weight:bold;
+}
+
+.footer{
+  text-align:center;
+  margin-top:10px;
+  font-size:13px;
+  color:#666;
 }
 </style>
 </head>
@@ -75,32 +105,39 @@ button{
 <div class="container">
 
 <div class="logo">
-  <h1>ThaiGo</h1>
-  <span>AIR EXPRESS</span>
+<h1>ThaiGo</h1>
+<span>AIR EXPRESS</span>
 </div>
 
-<h3 style="text-align:center;">คำนวณค่าส่งพัสดุ</h3>
+<h2>คำนวณค่าส่งพัสดุ</h2>
 
 <label>ประเทศ</label>
 <select id="country"></select>
 
 <label>น้ำหนัก (kg)</label>
-<input type="number" id="weight">
+<input type="number" id="weight" placeholder="เช่น 1">
 
 <div class="row">
-<input type="number" id="length" placeholder="ยาว (cm)">
-<input type="number" id="width" placeholder="กว้าง (cm)">
-<input type="number" id="height" placeholder="สูง (cm)">
+<input type="number" id="length" placeholder="ยาว">
+<input type="number" id="width" placeholder="กว้าง">
+<input type="number" id="height" placeholder="สูง">
 </div>
 
 <button onclick="calculate()">✈️ คำนวณราคา</button>
 
 <div class="result" id="result">กำลังโหลดราคา...</div>
 
+<a href="https://lin.ee/O6PIltj">
+💬 แอด LINE เพื่อส่งพัสดุ
+</a>
+
+<div class="footer">
+📦 ส่งไว 3-7 วัน | มีแอดมินดูแลตลอด
+</div>
+
 </div>
 
 <script>
-
 let pricing = {};
 
 async function loadPricing(){
@@ -109,76 +146,64 @@ async function loadPricing(){
   let res = await fetch(url);
   let data = await res.json();
 
-  let countrySet = new Set();
+  let countries = new Set();
 
   data.forEach(row => {
-    let country = row.country?.trim();
+    let country = row.country;
     let weight = parseFloat(row.weight);
-    let price = parseFloat((row.price || "").replace(/,/g,''));
+    let price = parseFloat((row.price || "0").replace(/,/g,''));
 
-    // ✅ ให้ประเทศขึ้นแม้ไม่มีราคา
-    if(!country || isNaN(weight)) return;
+    if(!country || isNaN(weight) || isNaN(price)) return;
+
+    countries.add(country);
 
     if(!pricing[country]){
       pricing[country] = {};
     }
 
-    if(!isNaN(price)){
-      pricing[country][weight] = price;
-    }
-
-    countrySet.add(country);
+    pricing[country][weight] = price;
   });
 
   let select = document.getElementById("country");
-  select.innerHTML = "";
-
-  [...countrySet].sort().forEach(c=>{
+  countries.forEach(c=>{
     let opt = document.createElement("option");
     opt.value = c;
     opt.textContent = c;
     select.appendChild(opt);
   });
 
-  document.getElementById("result").innerHTML = "พร้อมใช้งานแล้ว";
+  document.getElementById("result").innerHTML = "✔ พร้อมใช้งานแล้ว";
 }
 
 loadPricing();
 
 function calculate(){
+  let country = document.getElementById("country").value;
+  let w = parseFloat(document.getElementById("weight").value) || 0;
+  let l = parseFloat(document.getElementById("length").value) || 0;
+  let wi = parseFloat(document.getElementById("width").value) || 0;
+  let h = parseFloat(document.getElementById("height").value) || 0;
 
-let country = document.getElementById("country").value;
-let w = parseFloat(document.getElementById("weight").value) || 0;
-let l = parseFloat(document.getElementById("length").value) || 0;
-let wi = parseFloat(document.getElementById("width").value) || 0;
-let h = parseFloat(document.getElementById("height").value) || 0;
+  let vol = (l * wi * h) / 5000;
+  let charge = Math.max(w, vol);
+  charge = Math.ceil(charge * 10) / 10;
 
-let vol = (l * wi * h) / 5000;
-let charge = Math.max(w, vol);
-charge = Math.ceil(charge * 10) / 10;
+  let table = pricing[country];
 
-let table = pricing[country];
+  if(!table){
+    document.getElementById("result").innerHTML = "❌ ยังไม่มีราคาประเทศนี้";
+    return;
+  }
 
-// ❗ ไม่มีราคาจริง
-if(!table || Object.keys(table).length === 0){
-  document.getElementById("result").innerHTML = `
-  ⚠️ ประเทศนี้ยังไม่มีราคาชัดเจน<br><br>
-  <a class="line-btn" href="https://lin.ee/O6PIltj">
-  📲 สอบถามราคากับแอดมิน
-  </a>`;
-  return;
+  let keys = Object.keys(table).map(Number).sort((a,b)=>a-b);
+  let finalWeight = keys.find(k => k >= charge) || keys[keys.length-1];
+  let price = table[finalWeight];
+
+  document.getElementById("result").innerHTML =
+  `น้ำหนักคิดราคา: <b>${charge} kg</b><br>
+   ราคาค่าส่ง: <b>${price} บาท</b><br>
+   <div class="badge">✔ รวมภาษีแล้ว ไม่มีค่าใช้จ่ายเพิ่ม</div>`;
 }
-
-let keys = Object.keys(table).map(Number).sort((a,b)=>a-b);
-let finalWeight = keys.find(k => k >= charge) || keys[keys.length-1];
-let price = table[finalWeight];
-
-document.getElementById("result").innerHTML =
-`น้ำหนักคิดราคา: ${charge} kg <br>
-ราคาค่าส่ง: ${price.toLocaleString()} บาท`;
-
-}
-
 </script>
 
 </body>
