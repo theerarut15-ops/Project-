@@ -76,7 +76,8 @@ async function loadPricing(){
   data.forEach(row => {
     let country = row.country;
     let weight = parseFloat(row.weight);
-    let price = parseFloat(row.price.replace(/,/g, ''));
+    let price = parseFloat((row.price || "0").replace(/,/g, ''));
+    if(isNaN(price)) return;
     if(!pricing[country]){
       pricing[country] = {};
     }
