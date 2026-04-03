@@ -77,7 +77,7 @@ async function loadPricing(){
     let country = row.country;
     let weight = parseFloat(row.weight);
     let price = parseFloat(row.price);
-
+    let price = parseFloat(row.price.replace(/,/g, ''));
     if(!pricing[country]){
       pricing[country] = {};
     }
