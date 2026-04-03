@@ -2,57 +2,49 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>ThaiGo Order</title>
-
+<title>ThaiGo Air Express</title>
 <style>
 body{
-font-family: Arial;
-background:#0f2a4a;
-padding:20px;
+  font-family: Arial;
+  background:#0f2a4a;
+  padding:20px;
 }
-
 .container{
-background:#fff;
-padding:20px;
-border-radius:12px;
-max-width:400px;
-margin:auto;
+  background:#fff;
+  padding:20px;
+  border-radius:12px;
+  max-width:400px;
+  margin:auto;
 }
-
 input,select{
-width:100%;
-padding:10px;
-margin:8px 0;
-border-radius:8px;
-border:1px solid #ccc;
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
 }
-
 button{
-width:100%;
-padding:12px;
-background:#1e3a8a;
-color:#fff;
-border:none;
-border-radius:10px;
-font-size:16px;
+  width:100%;
+  padding:12px;
+  background:#1e3a8a;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  font-size:16px;
 }
-
 .result{
-margin-top:15px;
-font-weight:bold;
+  margin-top:15px;
+  font-weight:bold;
 }
 </style>
 </head>
-
 <body>
-
 <div class="container">
 <h2>คำนวณค่าส่ง</h2>
 
 <label>ประเทศ</label>
 <select id="country">
 <option value="USA">USA</option>
-<!-- เพิ่มประเทศทีหลังได้ -->
 </select>
 
 <label>น้ำหนัก (kg)</label>
@@ -69,83 +61,60 @@ font-weight:bold;
 
 <button onclick="calculate()">คำนวณราคา</button>
 
-<div class="result" id="result"></div>
+<div class="result" id="result">กำลังโหลดราคา...</div>
 
 </div>
 
 <script>
+let pricing = {};
 
-//////////////////////////
-// 🔥 ตารางราคา (แก้ตรงนี้อย่างเดียว)
-//////////////////////////
+async function loadPricing(){
+  const url = "https://opensheet.elk.sh/1bkT93uDRhnTeb_nFzKWXsTbtDhGKbl-B_TNf_4gIX4Y/pricing_master";
+  let res = await fetch(url);
+  let data = await res.json();
 
-const pricing = {
-  USA: {
-    0.1: 720,
-    0.2: 780,
-    0.3: 850,
-    0.4: 930,
-    0.5: 1010,
-    0.6: 1070,
-    0.7: 1120,
-    0.8: 1170,
-    0.9: 1220,
-    1.0: 1310,
-    1.5: 1830,
-    2.0: 2170,
-    2.5: 2540,
-    3.0: 2870,
-    3.5: 3580,
-    4.0: 3900,
-    4.5: 4220,
-    5.0: 4420,
-    6.0: 5490,
-    7.0: 6300,
-    8.0: 7020,
-    9.0: 7550,
-    10.0: 8050,
-    12.0: 9740,
-    15.0: 11120,
-    18.0: 12990,
-    20.0: 15550
-  }
-};
+  data.forEach(row => {
+    let country = row.country;
+    let weight = parseFloat(row.weight);
+    let price = parseFloat(row.price);
 
-//////////////////////////
-// 🔥 ฟังก์ชันคำนวณ
-//////////////////////////
+    if(!pricing[country]){
+      pricing[country] = {};
+    }
 
-function calculate(){
+    pricing[country][weight] = price;
+  });
 
-let country = document.getElementById("country").value;
-let w = parseFloat(document.getElementById("weight").value) || 0;
-let l = parseFloat(document.getElementById("length").value) || 0;
-let wi = parseFloat(document.getElementById("width").value) || 0;
-let h = parseFloat(document.getElementById("height").value) || 0;
-
-// น้ำหนักปริมาตร
-let vol = (l * wi * h) / 5000;
-
-// ใช้ค่าที่มากกว่า
-let charge = Math.max(w, vol);
-
-// ปัดขึ้นเป็น 0.1
-charge = Math.ceil(charge * 10) / 10;
-
-// หา weight ที่ใกล้ที่สุด
-let table = pricing[country];
-let keys = Object.keys(table).map(Number).sort((a,b)=>a-b);
-
-let finalWeight = keys.find(k => k >= charge) || keys[keys.length-1];
-let price = table[finalWeight];
-
-// แสดงผล
-document.getElementById("result").innerHTML =
-`น้ำหนักคิดราคา: ${charge} kg <br> ราคาค่าส่ง: ${price} บาท`;
-
+  document.getElementById("result").innerHTML = "พร้อมใช้งานแล้ว";
 }
 
-</script>
+loadPricing();
 
+function calculate(){
+  let country = document.getElementById("country").value;
+  let w = parseFloat(document.getElementById("weight").value) || 0;
+  let l = parseFloat(document.getElementById("length").value) || 0;
+  let wi = parseFloat(document.getElementById("width").value) || 0;
+  let h = parseFloat(document.getElementById("height").value) || 0;
+
+  let vol = (l * wi * h) / 5000;
+  let charge = Math.max(w, vol);
+  charge = Math.ceil(charge * 10) / 10;
+
+  let table = pricing[country];
+
+  if(!table){
+    document.getElementById("result").innerHTML = "ยังไม่มีราคาประเทศนี้";
+    return;
+  }
+
+  let keys = Object.keys(table).map(Number).sort((a,b)=>a-b);
+  let finalWeight = keys.find(k => k >= charge) || keys[keys.length-1];
+  let price = table[finalWeight];
+
+  document.getElementById("result").innerHTML =
+  `น้ำหนักคิดราคา: ${charge} kg <br> ราคาค่าส่ง: ${price} บาท`;
+}
+</script>
 </body>
 </html>
