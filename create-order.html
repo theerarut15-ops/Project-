@@ -16,10 +16,10 @@ body{
 .container{
   background:#fff;
   padding:25px;
-  border-radius:16px;
+  border-radius:18px;
   max-width:420px;
   margin:auto;
-  box-shadow:0 10px 30px rgba(0,0,0,0.2);
+  box-shadow:0 15px 40px rgba(0,0,0,0.25);
 }
 
 .logo{
@@ -30,6 +30,7 @@ body{
 .logo h1{
   color:#1e3a8a;
   margin:0;
+  font-size:28px;
 }
 
 .logo span{
@@ -39,6 +40,14 @@ body{
 
 h2{
   text-align:center;
+  margin-top:5px;
+}
+
+.sub{
+  text-align:center;
+  font-size:13px;
+  color:#666;
+  margin-bottom:15px;
 }
 
 input,select{
@@ -64,19 +73,21 @@ button{
   border-radius:12px;
   font-size:16px;
   margin-top:10px;
+  cursor:pointer;
 }
 
 .result{
   margin-top:15px;
   background:#f3f4f6;
   padding:15px;
-  border-radius:10px;
+  border-radius:12px;
   text-align:center;
 }
 
 .badge{
   color:green;
-  margin-top:5px;
+  margin-top:8px;
+  font-weight:bold;
 }
 
 .line-btn{
@@ -85,17 +96,25 @@ button{
   text-align:center;
   background:#06c755;
   color:#fff;
-  padding:12px;
-  border-radius:10px;
+  padding:14px;
+  border-radius:12px;
   text-decoration:none;
   font-weight:bold;
+  font-size:15px;
+}
+
+.trust{
+  margin-top:10px;
+  text-align:center;
+  font-size:13px;
+  color:#444;
 }
 
 .footer{
   text-align:center;
   margin-top:10px;
-  font-size:13px;
-  color:#666;
+  font-size:12px;
+  color:#777;
 }
 </style>
 </head>
@@ -109,30 +128,35 @@ button{
 <span>AIR EXPRESS</span>
 </div>
 
-<h2>คำนวณค่าส่งพัสดุ</h2>
+<h2>Shipping Calculator</h2>
+<div class="sub">Fast • Reliable • Worldwide</div>
 
-<label>ประเทศ</label>
+<label>Destination</label>
 <select id="country"></select>
 
-<label>น้ำหนัก (kg)</label>
-<input type="number" id="weight" placeholder="เช่น 1">
+<label>Weight (kg)</label>
+<input type="number" id="weight" placeholder="e.g. 1">
 
 <div class="row">
-<input type="number" id="length" placeholder="ยาว">
-<input type="number" id="width" placeholder="กว้าง">
-<input type="number" id="height" placeholder="สูง">
+<input type="number" id="length" placeholder="Length">
+<input type="number" id="width" placeholder="Width">
+<input type="number" id="height" placeholder="Height">
 </div>
 
-<button onclick="calculate()">✈️ คำนวณราคา</button>
+<button onclick="calculate()">✈️ Calculate Price</button>
 
-<div class="result" id="result">กำลังโหลดราคา...</div>
+<div class="result" id="result">Loading price...</div>
 
-<a href="https://lin.ee/O6PIltj">
-💬 แอด LINE เพื่อส่งพัสดุ
+<a href="https://lin.ee/xfm469D">
+🚀 Start Shipping via LINE
 </a>
 
+<div class="trust">
+✔ No hidden fees • ✔ Tax included • ✔ Real support
+</div>
+
 <div class="footer">
-📦 ส่งไว 3-7 วัน | มีแอดมินดูแลตลอด
+📦 Delivery 3-7 days worldwide
 </div>
 
 </div>
@@ -172,7 +196,7 @@ async function loadPricing(){
     select.appendChild(opt);
   });
 
-  document.getElementById("result").innerHTML = "✔ พร้อมใช้งานแล้ว";
+  document.getElementById("result").innerHTML = "✔ Ready to use";
 }
 
 loadPricing();
@@ -191,7 +215,7 @@ function calculate(){
   let table = pricing[country];
 
   if(!table){
-    document.getElementById("result").innerHTML = "❌ ยังไม่มีราคาประเทศนี้";
+    document.getElementById("result").innerHTML = "No pricing available";
     return;
   }
 
@@ -200,9 +224,9 @@ function calculate(){
   let price = table[finalWeight];
 
   document.getElementById("result").innerHTML =
-`น้ำหนักคิดราคา: <b>${charge} kg</b><br>
-ราคาค่าส่ง: <b>${price} บาท</b><br>
-<div class="badge">✔ รวมภาษีแล้ว ไม่มีค่าใช้จ่ายเพิ่ม</div>`;
+  `Chargeable weight: <b>${charge} kg</b><br>
+   Shipping cost: <b>${price} THB</b><br>
+   <div class="badge">✔ Tax included • No hidden fees</div>`;
 }
 </script>
 
