@@ -7,35 +7,63 @@
 <style>
 body{
   font-family: Arial;
-  background:#0f2a4a;
+  background: linear-gradient(135deg,#0f2a4a,#1e3a8a);
   padding:20px;
 }
+
 .container{
   background:#fff;
-  padding:20px;
-  border-radius:12px;
-  max-width:400px;
+  padding:25px;
+  border-radius:16px;
+  max-width:420px;
   margin:auto;
+  box-shadow:0 10px 30px rgba(0,0,0,0.2);
 }
+
+.logo{
+  text-align:center;
+  margin-bottom:10px;
+}
+
+.logo h1{
+  margin:0;
+  color:#1e3a8a;
+}
+
+.logo span{
+  color:#c9a54c;
+  font-weight:bold;
+}
+
 input,select{
   width:100%;
-  padding:10px;
+  padding:12px;
   margin:8px 0;
-  border-radius:8px;
-  border:1px solid #ccc;
+  border-radius:10px;
+  border:1px solid #ddd;
 }
+
+.row{
+  display:flex;
+  gap:10px;
+}
+
 button{
   width:100%;
-  padding:12px;
-  background:#1e3a8a;
+  padding:14px;
+  background: linear-gradient(90deg,#1e3a8a,#0f2a4a);
   color:#fff;
   border:none;
-  border-radius:10px;
+  border-radius:12px;
   font-size:16px;
 }
+
 .result{
   margin-top:15px;
-  font-weight:bold;
+  padding:15px;
+  background:#f3f6fb;
+  border-radius:12px;
+  text-align:center;
 }
 </style>
 </head>
@@ -43,7 +71,13 @@ button{
 <body>
 
 <div class="container">
-<h2>คำนวณค่าส่ง</h2>
+
+<div class="logo">
+  <h1>ThaiGo</h1>
+  <span>AIR EXPRESS</span>
+</div>
+
+<h3 style="text-align:center;">คำนวณค่าส่งพัสดุ</h3>
 
 <label>ประเทศ</label>
 <select id="country"></select>
@@ -51,16 +85,13 @@ button{
 <label>น้ำหนัก (kg)</label>
 <input type="number" id="weight">
 
-<label>ยาว (cm)</label>
-<input type="number" id="length">
+<div class="row">
+<input type="number" id="length" placeholder="ยาว (cm)">
+<input type="number" id="width" placeholder="กว้าง (cm)">
+<input type="number" id="height" placeholder="สูง (cm)">
+</div>
 
-<label>กว้าง (cm)</label>
-<input type="number" id="width">
-
-<label>สูง (cm)</label>
-<input type="number" id="height">
-
-<button onclick="calculate()">คำนวณราคา</button>
+<button onclick="calculate()">✈️ คำนวณราคา</button>
 
 <div class="result" id="result">กำลังโหลดราคา...</div>
 
@@ -70,76 +101,71 @@ button{
 
 let pricing = {};
 
-// โหลดราคา
 async function loadPricing(){
   const url = "https://opensheet.elk.sh/1bkT93uDRhnTeb_nFzKWXsTbtDhGKbl-B_TNf_4gIX4Y/pricing_master";
 
   let res = await fetch(url);
   let data = await res.json();
 
-  data.forEach(row => {
-    let country = row.country;
-    let weight = parseFloat(row.weight);
-    let price = parseFloat((row.price || "0").replace(/,/g, ''));
+  let countrySet = new Set();
 
-    if(isNaN(price)) return;
+  data.forEach(row => {
+    let country = row.country?.trim();
+    let weight = parseFloat(row.weight);
+    let price = parseFloat((row.price || "0").replace(/,/g,''));
+
+    if(!country || isNaN(weight) || isNaN(price)) return;
 
     if(!pricing[country]){
       pricing[country] = {};
     }
 
     pricing[country][weight] = price;
+    countrySet.add(country);
   });
 
-  loadCountries();
+  let select = document.getElementById("country");
+  select.innerHTML = "";
+
+  [...countrySet].sort().forEach(c=>{
+    let opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    select.appendChild(opt);
+  });
 
   document.getElementById("result").innerHTML = "พร้อมใช้งานแล้ว";
 }
 
-// 🔥 สร้าง dropdown ประเทศอัตโนมัติ
-function loadCountries(){
-  let select = document.getElementById("country");
-  select.innerHTML = "";
-
-  Object.keys(pricing).forEach(country => {
-    let option = document.createElement("option");
-    option.value = country;
-    option.text = country;
-    select.appendChild(option);
-  });
-}
-
-// คำนวณราคา
-function calculate(){
-  let country = document.getElementById("country").value;
-  let w = parseFloat(document.getElementById("weight").value) || 0;
-  let l = parseFloat(document.getElementById("length").value) || 0;
-  let wi = parseFloat(document.getElementById("width").value) || 0;
-  let h = parseFloat(document.getElementById("height").value) || 0;
-
-  let vol = (l * wi * h) / 5000;
-  let charge = Math.max(w, vol);
-
-  charge = Math.ceil(charge * 10) / 10;
-
-  let table = pricing[country];
-
-  if(!table){
-    document.getElementById("result").innerHTML = "ยังไม่มีราคาประเทศนี้";
-    return;
-  }
-
-  let keys = Object.keys(table).map(Number).sort((a,b)=>a-b);
-
-  let finalWeight = keys.find(k => k >= charge) || keys[keys.length-1];
-  let price = table[finalWeight];
-
-  document.getElementById("result").innerHTML =
-  `น้ำหนักคิดราคา: ${charge} kg <br> ราคาค่าส่ง: ${price} บาท`;
-}
-
-// เริ่มโหลด
 loadPricing();
+
+function calculate(){
+
+let country = document.getElementById("country").value;
+let w = parseFloat(document.getElementById("weight").value) || 0;
+let l = parseFloat(document.getElementById("length").value) || 0;
+let wi = parseFloat(document.getElementById("width").value) || 0;
+let h = parseFloat(document.getElementById("height").value) || 0;
+
+let vol = (l * wi * h) / 5000;
+let charge = Math.max(w, vol);
+charge = Math.ceil(charge * 10) / 10;
+
+let table = pricing[country];
+
+if(!table){
+  document.getElementById("result").innerHTML = "ยังไม่มีราคาประเทศนี้";
+  return;
+}
+
+let keys = Object.keys(table).map(Number).sort((a,b)=>a-b);
+let finalWeight = keys.find(k => k >= charge) || keys[keys.length-1];
+let price = table[finalWeight];
+
+document.getElementById("result").innerHTML =
+`น้ำหนักคิดราคา: ${charge} kg <br> ราคาค่าส่ง: ${price.toLocaleString()} บาท`;
+
+}
 
 </script>
 
