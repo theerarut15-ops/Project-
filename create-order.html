@@ -2,54 +2,149 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>สร้างรายการส่งพัสดุ</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ThaiGo Order</title>
+
+<style>
+body{
+font-family: Arial;
+background:#0f2a4a;
+padding:20px;
+}
+
+.container{
+background:#fff;
+padding:20px;
+border-radius:12px;
+max-width:400px;
+margin:auto;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin:8px 0;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#1e3a8a;
+color:#fff;
+border:none;
+border-radius:10px;
+font-size:16px;
+}
+
+.result{
+margin-top:15px;
+font-weight:bold;
+}
+</style>
 </head>
 
-<body style="font-family:Arial;padding:20px;max-width:500px;margin:auto;">
+<body>
 
-<h2>สร้างรายการส่งพัสดุ</h2>
+<div class="container">
+<h2>คำนวณค่าส่ง</h2>
 
-<label>ชื่อผู้ส่ง</label>
-<input type="text" id="customer_name" style="width:100%;padding:8px;margin-bottom:10px;">
+<label>ประเทศ</label>
+<select id="country">
+<option value="USA">USA</option>
+<!-- เพิ่มประเทศทีหลังได้ -->
+</select>
 
-<label>เบอร์โทร</label>
-<input type="text" id="phone" style="width:100%;padding:8px;margin-bottom:10px;">
+<label>น้ำหนัก (kg)</label>
+<input type="number" id="weight">
 
-<label>ประเทศปลายทาง (เช่น AU)</label>
-<input type="text" id="destination" style="width:100%;padding:8px;margin-bottom:10px;">
+<label>ยาว (cm)</label>
+<input type="number" id="length">
 
-<label>น้ำหนัก (กรัม)</label>
-<input type="number" id="weight" style="width:100%;padding:8px;margin-bottom:15px;">
+<label>กว้าง (cm)</label>
+<input type="number" id="width">
 
-<button onclick="submitOrder()" style="padding:12px;width:100%;background:#0f2c59;color:white;border:none;border-radius:8px;">
-ส่งข้อมูล
-</button>
+<label>สูง (cm)</label>
+<input type="number" id="height">
 
-<p id="result" style="margin-top:15px;"></p>
+<button onclick="calculate()">คำนวณราคา</button>
+
+<div class="result" id="result"></div>
+
+</div>
 
 <script>
-const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AKfycbzJfvJkZln9YacGZ0sRzfkn7E1zFUEooUC1HIcUQJ-iAsSAcWjQsxUyTzcKxJCnKjt3/exec";
 
-async function submitOrder(){
-  const data = {
-    customer_name: document.getElementById("customer_name").value,
-    phone: document.getElementById("phone").value,
-    destination: document.getElementById("destination").value,
-    estimated_weight: document.getElementById("weight").value
-  };
+//////////////////////////
+// 🔥 ตารางราคา (แก้ตรงนี้อย่างเดียว)
+//////////////////////////
 
-  const res = await fetch(API_URL, {
-    method: "POST",
-     headers: {
-    "Content-Type": "text/plain;charset=utf-8"
-  },
-    body: JSON.stringify(data)
-  });
+const pricing = {
+  USA: {
+    0.1: 720,
+    0.2: 780,
+    0.3: 850,
+    0.4: 930,
+    0.5: 1010,
+    0.6: 1070,
+    0.7: 1120,
+    0.8: 1170,
+    0.9: 1220,
+    1.0: 1310,
+    1.5: 1830,
+    2.0: 2170,
+    2.5: 2540,
+    3.0: 2870,
+    3.5: 3580,
+    4.0: 3900,
+    4.5: 4220,
+    5.0: 4420,
+    6.0: 5490,
+    7.0: 6300,
+    8.0: 7020,
+    9.0: 7550,
+    10.0: 8050,
+    12.0: 9740,
+    15.0: 11120,
+    18.0: 12990,
+    20.0: 15550
+  }
+};
 
-  const json = await res.json();
-  document.getElementById("result").innerText = json.message || "ส่งสำเร็จ";
+//////////////////////////
+// 🔥 ฟังก์ชันคำนวณ
+//////////////////////////
+
+function calculate(){
+
+let country = document.getElementById("country").value;
+let w = parseFloat(document.getElementById("weight").value) || 0;
+let l = parseFloat(document.getElementById("length").value) || 0;
+let wi = parseFloat(document.getElementById("width").value) || 0;
+let h = parseFloat(document.getElementById("height").value) || 0;
+
+// น้ำหนักปริมาตร
+let vol = (l * wi * h) / 5000;
+
+// ใช้ค่าที่มากกว่า
+let charge = Math.max(w, vol);
+
+// ปัดขึ้นเป็น 0.1
+charge = Math.ceil(charge * 10) / 10;
+
+// หา weight ที่ใกล้ที่สุด
+let table = pricing[country];
+let keys = Object.keys(table).map(Number).sort((a,b)=>a-b);
+
+let finalWeight = keys.find(k => k >= charge) || keys[keys.length-1];
+let price = table[finalWeight];
+
+// แสดงผล
+document.getElementById("result").innerHTML =
+`น้ำหนักคิดราคา: ${charge} kg <br> ราคาค่าส่ง: ${price} บาท`;
+
 }
+
 </script>
 
 </body>
